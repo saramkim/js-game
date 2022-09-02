@@ -1,21 +1,21 @@
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
 
-canvas.width = window.innerWidth - 40;
-canvas.height = window.innerHeight - 40;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight - 16;
 
-const img1 = new Image();
-img1.src = "bear.png";
+// const img1 = new Image();
+// img1.src = "bear.png";
 
-const dino = {
+const user = {
   x: 100,
-  y: 300,
+  y: 900,
   width: 50,
   height: 50,
   draw() {
-    // ctx.fillStyle = "green";
-    // ctx.fillRect(this.x, this.y, this.width, this.height);
-    ctx.drawImage(img1, this.x, this.y, this.width, this.height);
+    ctx.fillStyle = "green";
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+    // ctx.drawImage(img1, this.x, this.y, this.width, this.height);
   },
 };
 
@@ -26,8 +26,8 @@ class Cactus {
   height: number;
 
   constructor() {
-    this.x = canvas.width;
-    this.y = 300;
+    this.x = Math.random() * canvas.width;
+    this.y = 0;
     this.width = 50;
     this.height = 50;
   }
@@ -37,30 +37,32 @@ class Cactus {
   }
 }
 
-class Bonus {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+// class Bonus {
+//   x: number;
+//   y: number;
+//   width: number;
+//   height: number;
 
-  constructor() {
-    this.x = canvas.width;
-    this.y = 200;
-    this.width = 50;
-    this.height = 50;
-  }
-  draw() {
-    ctx.fillStyle = "blue";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-  }
-}
+//   constructor() {
+//     this.x = canvas.width;
+//     this.y = 200;
+//     this.width = 50;
+//     this.height = 50;
+//   }
+//   draw() {
+//     ctx.fillStyle = "blue";
+//     ctx.fillRect(this.x, this.y, this.width, this.height);
+//   }
+// }
 
 let timer = 0;
 let score = 0;
 const cactusArray: Cactus[] = [];
-const bonusArray: Bonus[] = [];
-let jumping = false;
-let jumpTimer = 0;
+// const bonusArray: Bonus[] = [];
+let goLeft = false;
+let goRight = false;
+let leftTimer = 0;
+let rightTimer = 0;
 let animation: number;
 
 function Frame() {
@@ -74,71 +76,93 @@ function Frame() {
   ctx.font = "bold 48px san-serif";
   ctx.strokeText(String(score), 100, 100);
 
-  if (timer % 120 === 0) {
+  let stopMove = false;
+
+  if (timer % 300 === 0) {
     const cactus = new Cactus();
     cactusArray.push(cactus);
   }
-  cactusArray.map((a, i, o) => {
-    a.x < -50 && o.splice(i, 1);
-    a.x -= 6;
 
-    Collision(dino, a);
+  cactusArray.forEach((cactus, i, o) => {
+    const x축차이 = user.x - cactus.x;
+    const y축차이 = user.y - (cactus.y + user.height);
+    const index = o.findIndex((cactus) => cactus.y >= 900);
+    const index2 = o.findIndex((cactus) => {
+      const x축차이 = user.x - cactus.x;
+      const y축차이 = user.y - (cactus.y + user.height);
+      return x축차이 > -50 && x축차이 <= 50 && y축차이 === 0;
+    });
 
-    a.draw();
-  });
+    cactus.y < 900 ? (cactus.y += 5) : o.splice(index, 1);
 
-  if (timer % 500 === 0) {
-    const bonus = new Bonus();
-    bonusArray.push(bonus);
-  }
-  bonusArray.map((a, i, o) => {
-    a.x < -50 && o.splice(i, 1);
-    a.x -= 10;
-
-    Collision2(dino, a);
-
-    a.draw();
-  });
-
-  if (jumping == true) {
-    dino.y -= 6;
-    jumpTimer++;
-  }
-  if (jumping == false) {
-    if (dino.y < 300) {
-      dino.y += 6;
+    if (x축차이 > -50 && x축차이 <= 50 && y축차이 === 0) {
+      o[index2].y -= 5;
     }
+
+    // Collision(user, cactus);
+
+    cactus.draw();
+  });
+
+  // if (timer % 500 === 0) {
+  //   const bonus = new Bonus();
+  //   bonusArray.push(bonus);
+  // }
+  // bonusArray.map((a, i, o) => {
+  //   a.x < -50 && o.splice(i, 1);
+  //   a.x -= 10;
+
+  //   Collision2(user, a);
+
+  //   a.draw();
+  // });
+
+  if (goLeft == true) {
+    user.x -= 6;
+    leftTimer++;
   }
-  if (jumpTimer > 30) {
-    jumping = false;
-    jumpTimer = 0;
+  if (leftTimer > 20) {
+    goLeft = false;
+    leftTimer = 0;
   }
-  dino.draw();
+  if (goRight == true) {
+    user.x += 6;
+    rightTimer++;
+  }
+  if (rightTimer > 20) {
+    goRight = false;
+    rightTimer = 0;
+  }
+  user.draw();
 }
 
 // 충돌확인
-function Collision(dino: any, cactus: any) {
-  let x축차이 = cactus.x - (dino.x + dino.width);
-  let y축차이 = cactus.y - (dino.y + dino.height);
+// function Collision(user: any, cactus: any, stopMove: any) {
+//   const x축차이 = user.x - cactus.x;
+//   const y축차이 = user.y - (cactus.y + user.height);
 
-  if (x축차이 < 0 && x축차이 >= -100 && y축차이 < 0 && y축차이 >= -50) {
-    cancelAnimationFrame(animation);
-    // ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-}
+//   if (x축차이 > -100 && x축차이 <= 100 && y축차이 === 0) {
 
-function Collision2(dino: any, bonus: any) {
-  let x축차이 = bonus.x - (dino.x + dino.width);
-  let y축차이 = bonus.y - (dino.y + dino.height);
+//   }
+// }
 
-  if (x축차이 < 0 && x축차이 >= -100 && y축차이 < 0 && y축차이 >= -50) {
-    score += 1000;
-  }
-}
+// function Collision2(user: any, bonus: any) {
+//   const x축차이 = bonus.x - (user.x + user.width);
+//   const y축차이 = bonus.y - (user.y + user.height);
+
+//   if (x축차이 < 0 && x축차이 >= -100 && y축차이 < 0 && y축차이 >= -50) {
+//     score += 1000;
+//   }
+// }
 
 document.addEventListener("keydown", function (a) {
-  if (a.code === "Space" && dino.y == 300) {
-    jumping = true;
+  if (a.code === "ArrowLeft" && user.x !== 0) {
+    goLeft = true;
+  }
+});
+document.addEventListener("keydown", function (a) {
+  if (a.code === "ArrowRight" && user.x !== canvas.width) {
+    goRight = true;
   }
 });
 
@@ -147,3 +171,6 @@ document.addEventListener("keydown", function (a) {
     animation = requestAnimationFrame(Frame);
   }
 });
+
+// cancelAnimationFrame(animation);
+// ctx.clearRect(0, 0, canvas.width, canvas.height);

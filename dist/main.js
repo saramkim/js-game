@@ -29,26 +29,23 @@ var Block = /** @class */ (function () {
     };
     return Block;
 }());
-// class Bonus {
-//   x: number;
-//   y: number;
-//   width: number;
-//   height: number;
-//   constructor() {
-//     this.x = canvas.width;
-//     this.y = 200;
-//     this.width = 50;
-//     this.height = 50;
-//   }
-//   draw() {
-//     ctx.fillStyle = "blue";
-//     ctx.fillRect(this.x, this.y, this.width, this.height);
-//   }
-// }
+var Bonus = /** @class */ (function () {
+    function Bonus() {
+        this.width = 50;
+        this.height = 50;
+        this.x = Math.random() * (canvas.width - this.width);
+        this.y = 0;
+    }
+    Bonus.prototype.draw = function () {
+        ctx.fillStyle = "blue";
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+    };
+    return Bonus;
+}());
 var timer = 0;
 var score = 0;
 var cactusArray = [];
-// const bonusArray: Bonus[] = [];
+var bonusArray = [];
 var goLeft = false;
 var goRight = false;
 var leftTimer = 0;
@@ -107,16 +104,19 @@ function Frame() {
         }
         block.draw();
     });
-    // if (timer % 500 === 0) {
-    //   const bonus = new Bonus();
-    //   bonusArray.push(bonus);
-    // }
-    // bonusArray.map((a, i, array) => {
-    //   a.x < -50 && array.splice(i, 1);
-    //   a.x -= 10;
-    //   Collision2(user, a);
-    //   a.draw();
-    // });
+    // bonus ------------
+    if (timer % 1000 === 0) {
+        var bonus = new Bonus();
+        bonusArray.push(bonus);
+    }
+    bonusArray.forEach(function (bonus, i, array) {
+        Collision(user, bonus) && (score += 1000);
+        bonus.y < 900 && !Collision(user, bonus)
+            ? (bonus.y += 5)
+            : array.splice(i, 1);
+        bonus.draw();
+    });
+    // control ------------
     if (goLeft == true) {
         user.x -= MOVE_SPEED;
         leftTimer++;

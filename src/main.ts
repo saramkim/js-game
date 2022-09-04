@@ -39,28 +39,28 @@ class Block {
   }
 }
 
-// class Bonus {
-//   x: number;
-//   y: number;
-//   width: number;
-//   height: number;
+class Bonus {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 
-//   constructor() {
-//     this.x = canvas.width;
-//     this.y = 200;
-//     this.width = 50;
-//     this.height = 50;
-//   }
-//   draw() {
-//     ctx.fillStyle = "blue";
-//     ctx.fillRect(this.x, this.y, this.width, this.height);
-//   }
-// }
+  constructor() {
+    this.width = 50;
+    this.height = 50;
+    this.x = Math.random() * (canvas.width - this.width);
+    this.y = 0;
+  }
+  draw() {
+    ctx.fillStyle = "blue";
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+  }
+}
 
 let timer = 0;
 let score = 0;
 const cactusArray: Block[] = [];
-// const bonusArray: Bonus[] = [];
+const bonusArray: Bonus[] = [];
 let goLeft = false;
 let goRight = false;
 let leftTimer = 0;
@@ -129,19 +129,22 @@ function Frame() {
     block.draw();
   });
 
-  // if (timer % 500 === 0) {
-  //   const bonus = new Bonus();
-  //   bonusArray.push(bonus);
-  // }
-  // bonusArray.map((a, i, array) => {
-  //   a.x < -50 && array.splice(i, 1);
-  //   a.x -= 10;
+  // bonus ------------
+  if (timer % 1000 === 0) {
+    const bonus = new Bonus();
+    bonusArray.push(bonus);
+  }
+  bonusArray.forEach((bonus, i, array) => {
+    Collision(user, bonus) && (score += 1000);
 
-  //   Collision2(user, a);
+    bonus.y < 900 && !Collision(user, bonus)
+      ? (bonus.y += 5)
+      : array.splice(i, 1);
 
-  //   a.draw();
-  // });
+    bonus.draw();
+  });
 
+  // control ------------
   if (goLeft == true) {
     user.x -= MOVE_SPEED;
     leftTimer++;

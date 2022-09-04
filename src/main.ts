@@ -19,7 +19,7 @@ const user = {
   },
 };
 
-class Cactus {
+class Block {
   x: number;
   y: number;
   width: number;
@@ -57,51 +57,59 @@ class Cactus {
 
 let timer = 0;
 let score = 0;
-const cactusArray: Cactus[] = [];
+const cactusArray: Block[] = [];
 // const bonusArray: Bonus[] = [];
 let goLeft = false;
 let goRight = false;
 let leftTimer = 0;
 let rightTimer = 0;
 let animation: number;
+const MOVE_SPEED = 10;
+const TIMER_TIME = 10;
+
+function Collision(pre: Block, cur: Block) {
+  const xCollision = Math.abs(pre.x - cur.x) < pre.width;
+  const yCollision = Math.abs(pre.y - cur.y) === pre.height;
+  return xCollision && yCollision;
+}
+
+function SideCollision(pre: Block, cur: Block) {
+  const xCollision = Math.abs(pre.x - cur.x) === pre.width;
+  const yCollision = Math.abs(pre.y - cur.y) < pre.height;
+  return xCollision && yCollision;
+}
 
 function Frame() {
   animation = requestAnimationFrame(Frame);
   timer++;
   score++;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // 그림자 효과
-  // ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-  // ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.font = "bold 48px san-serif";
   ctx.strokeText(String(score), 100, 100);
 
-  let stopMove = false;
-
-  if (timer % 300 === 0) {
-    const cactus = new Cactus();
-    cactusArray.push(cactus);
+  if (timer % 100 === 0) {
+    const block = new Block();
+    cactusArray.push(block);
   }
 
-  cactusArray.forEach((cactus, i, o) => {
-    const x축차이 = user.x - cactus.x;
-    const y축차이 = user.y - (cactus.y + user.height);
-    const index = o.findIndex((cactus) => cactus.y >= 900);
-    const index2 = o.findIndex((cactus) => {
-      const x축차이 = user.x - cactus.x;
-      const y축차이 = user.y - (cactus.y + user.height);
-      return x축차이 > -50 && x축차이 <= 50 && y축차이 === 0;
-    });
+  cactusArray.forEach((block, i, o) => {
+    const collisionEachOther = o.findIndex((stopedCactus) =>
+      Collision(stopedCactus, block)
+    );
+    const sideCollisionEachOther = o.findIndex((stopedCactus) =>
+      SideCollision(stopedCactus, block)
+    );
+    const stacking = collisionEachOther !== -1 || Collision(user, block);
+    const pushing = sideCollisionEachOther !== -1 || SideCollision(user, block);
 
-    cactus.y < 900 ? (cactus.y += 5) : o.splice(index, 1);
+    block.y >= 900 ? o.splice(i, 1) : !stacking && (block.y += MOVE_SPEED);
 
-    if (x축차이 > -50 && x축차이 <= 50 && y축차이 === 0) {
-      o[index2].y -= 5;
+    if (stacking || pushing) {
+      goLeft && (block.x -= MOVE_SPEED);
+      goRight && (block.x += MOVE_SPEED);
     }
 
-    // Collision(user, cactus);
-
-    cactus.draw();
+    block.draw();
   });
 
   // if (timer % 500 === 0) {
@@ -118,59 +126,50 @@ function Frame() {
   // });
 
   if (goLeft == true) {
-    user.x -= 6;
+    user.x -= MOVE_SPEED;
     leftTimer++;
   }
-  if (leftTimer > 20) {
+  if (leftTimer > TIMER_TIME) {
     goLeft = false;
     leftTimer = 0;
   }
   if (goRight == true) {
-    user.x += 6;
+    user.x += MOVE_SPEED;
     rightTimer++;
   }
-  if (rightTimer > 20) {
+  if (rightTimer > TIMER_TIME) {
     goRight = false;
     rightTimer = 0;
   }
+
   user.draw();
 }
 
-// 충돌확인
-// function Collision(user: any, cactus: any, stopMove: any) {
-//   const x축차이 = user.x - cactus.x;
-//   const y축차이 = user.y - (cactus.y + user.height);
-
-//   if (x축차이 > -100 && x축차이 <= 100 && y축차이 === 0) {
-
-//   }
-// }
-
-// function Collision2(user: any, bonus: any) {
-//   const x축차이 = bonus.x - (user.x + user.width);
-//   const y축차이 = bonus.y - (user.y + user.height);
-
-//   if (x축차이 < 0 && x축차이 >= -100 && y축차이 < 0 && y축차이 >= -50) {
-//     score += 1000;
-//   }
-// }
-
-document.addEventListener("keydown", function (a) {
-  if (a.code === "ArrowLeft" && user.x !== 0) {
+document.addEventListener("keydown", (key) => {
+  if ((key.code === "ArrowLeft" || key.code === "KeyA") && user.x > 0) {
     goLeft = true;
   }
 });
-document.addEventListener("keydown", function (a) {
-  if (a.code === "ArrowRight" && user.x !== canvas.width) {
+document.addEventListener("keydown", (key) => {
+  if (
+    (key.code === "ArrowRight" || key.code === "KeyD") &&
+    user.x < canvas.width
+  ) {
     goRight = true;
   }
 });
 
-document.addEventListener("keydown", function (a) {
-  if (a.code === "Enter") {
+// document.addEventListener('keydown', (key) => {
+//   if (key.code === 'Space') {
+
+//   }
+// });
+
+document.addEventListener("keydown", (key) => {
+  if (key.code === "Enter") {
+    cancelAnimationFrame(animation);
     animation = requestAnimationFrame(Frame);
   }
 });
 
-// cancelAnimationFrame(animation);
 // ctx.clearRect(0, 0, canvas.width, canvas.height);

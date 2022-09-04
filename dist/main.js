@@ -6,10 +6,10 @@ canvas.height = window.innerHeight - 16;
 // const img1 = new Image();
 // img1.src = "bear.png";
 var user = {
-    x: 100,
-    y: 900,
     width: 50,
     height: 50,
+    x: 100,
+    y: 900,
     draw: function () {
         ctx.fillStyle = "green";
         ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -18,10 +18,10 @@ var user = {
 };
 var Block = /** @class */ (function () {
     function Block() {
-        this.x = Math.random() * canvas.width;
-        this.y = 0;
         this.width = 50;
         this.height = 50;
+        this.x = Math.random() * (canvas.width - this.width);
+        this.y = 0;
     }
     Block.prototype.draw = function () {
         ctx.fillStyle = "red";
@@ -61,8 +61,13 @@ function Collision(pre, cur) {
     var yCollision = Math.abs(pre.y - cur.y) === pre.height;
     return xCollision && yCollision;
 }
-function SideCollision(pre, cur) {
-    var xCollision = Math.abs(pre.x - cur.x) === pre.width;
+function LeftCollision(pre, cur) {
+    var xCollision = pre.x - cur.x <= pre.width && pre.x - cur.x > 0;
+    var yCollision = Math.abs(pre.y - cur.y) < pre.height;
+    return xCollision && yCollision;
+}
+function RightCollision(pre, cur) {
+    var xCollision = cur.x - pre.x <= pre.width && cur.x - pre.x > 0;
     var yCollision = Math.abs(pre.y - cur.y) < pre.height;
     return xCollision && yCollision;
 }
@@ -77,18 +82,27 @@ function Frame() {
         var block = new Block();
         cactusArray.push(block);
     }
-    cactusArray.forEach(function (block, i, o) {
-        var collisionEachOther = o.findIndex(function (stopedCactus) {
-            return Collision(stopedCactus, block);
-        });
-        var sideCollisionEachOther = o.findIndex(function (stopedCactus) {
-            return SideCollision(stopedCactus, block);
-        });
+    cactusArray.forEach(function (block, i, array) {
+        var CollisionCheck = function (fn) {
+            return array
+                .filter(function (v) { return v !== block; })
+                .findIndex(function (stopedBlock) { return fn(stopedBlock, block); });
+        };
+        var collisionEachOther = CollisionCheck(Collision);
+        var LeftCollisionEachOther = CollisionCheck(LeftCollision);
+        var RightCollisionEachOther = CollisionCheck(RightCollision);
         var stacking = collisionEachOther !== -1 || Collision(user, block);
-        var pushing = sideCollisionEachOther !== -1 || SideCollision(user, block);
-        block.y >= 900 ? o.splice(i, 1) : !stacking && (block.y += MOVE_SPEED);
-        if (stacking || pushing) {
+        var pushingLeft = LeftCollisionEachOther !== -1 || LeftCollision(user, block);
+        var pushingRight = RightCollisionEachOther !== -1 || RightCollision(user, block);
+        block.y < 900 ? !stacking && (block.y += 1) : array.splice(i, 1);
+        if (stacking) {
             goLeft && (block.x -= MOVE_SPEED);
+            goRight && (block.x += MOVE_SPEED);
+        }
+        else if (pushingLeft) {
+            goLeft && (block.x -= MOVE_SPEED);
+        }
+        else if (pushingRight) {
             goRight && (block.x += MOVE_SPEED);
         }
         block.draw();
@@ -97,8 +111,8 @@ function Frame() {
     //   const bonus = new Bonus();
     //   bonusArray.push(bonus);
     // }
-    // bonusArray.map((a, i, o) => {
-    //   a.x < -50 && o.splice(i, 1);
+    // bonusArray.map((a, i, array) => {
+    //   a.x < -50 && array.splice(i, 1);
     //   a.x -= 10;
     //   Collision2(user, a);
     //   a.draw();

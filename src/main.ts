@@ -4,14 +4,16 @@ const ctx = canvas.getContext("2d")!;
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight - 16;
 
+type Fn = (stopedBlock: Block, block: Block) => boolean;
+
 // const img1 = new Image();
 // img1.src = "bear.png";
 
 const user = {
-  x: 100,
-  y: 900,
   width: 50,
   height: 50,
+  x: 100,
+  y: 900,
   draw() {
     ctx.fillStyle = "green";
     ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -26,10 +28,10 @@ class Block {
   height: number;
 
   constructor() {
-    this.x = Math.random() * canvas.width;
-    this.y = 0;
     this.width = 50;
     this.height = 50;
+    this.x = Math.random() * (canvas.width - this.width);
+    this.y = 0;
   }
   draw() {
     ctx.fillStyle = "red";
@@ -73,8 +75,14 @@ function Collision(pre: Block, cur: Block) {
   return xCollision && yCollision;
 }
 
-function SideCollision(pre: Block, cur: Block) {
-  const xCollision = Math.abs(pre.x - cur.x) === pre.width;
+function LeftCollision(pre: Block, cur: Block) {
+  const xCollision = pre.x - cur.x <= pre.width && pre.x - cur.x > 0;
+  const yCollision = Math.abs(pre.y - cur.y) < pre.height;
+  return xCollision && yCollision;
+}
+
+function RightCollision(pre: Block, cur: Block) {
+  const xCollision = cur.x - pre.x <= pre.width && cur.x - pre.x > 0;
   const yCollision = Math.abs(pre.y - cur.y) < pre.height;
   return xCollision && yCollision;
 }
@@ -92,20 +100,29 @@ function Frame() {
     cactusArray.push(block);
   }
 
-  cactusArray.forEach((block, i, o) => {
-    const collisionEachOther = o.findIndex((stopedCactus) =>
-      Collision(stopedCactus, block)
-    );
-    const sideCollisionEachOther = o.findIndex((stopedCactus) =>
-      SideCollision(stopedCactus, block)
-    );
+  cactusArray.forEach((block, i, array) => {
+    const CollisionCheck = (fn: Fn) =>
+      array
+        .filter((v) => v !== block)
+        .findIndex((stopedBlock) => fn(stopedBlock, block));
+    const collisionEachOther = CollisionCheck(Collision);
+    const LeftCollisionEachOther = CollisionCheck(LeftCollision);
+    const RightCollisionEachOther = CollisionCheck(RightCollision);
     const stacking = collisionEachOther !== -1 || Collision(user, block);
-    const pushing = sideCollisionEachOther !== -1 || SideCollision(user, block);
+    const pushingLeft =
+      LeftCollisionEachOther !== -1 || LeftCollision(user, block);
 
-    block.y >= 900 ? o.splice(i, 1) : !stacking && (block.y += MOVE_SPEED);
+    const pushingRight =
+      RightCollisionEachOther !== -1 || RightCollision(user, block);
 
-    if (stacking || pushing) {
+    block.y < 900 ? !stacking && (block.y += 1) : array.splice(i, 1);
+
+    if (stacking) {
       goLeft && (block.x -= MOVE_SPEED);
+      goRight && (block.x += MOVE_SPEED);
+    } else if (pushingLeft) {
+      goLeft && (block.x -= MOVE_SPEED);
+    } else if (pushingRight) {
       goRight && (block.x += MOVE_SPEED);
     }
 
@@ -116,8 +133,8 @@ function Frame() {
   //   const bonus = new Bonus();
   //   bonusArray.push(bonus);
   // }
-  // bonusArray.map((a, i, o) => {
-  //   a.x < -50 && o.splice(i, 1);
+  // bonusArray.map((a, i, array) => {
+  //   a.x < -50 && array.splice(i, 1);
   //   a.x -= 10;
 
   //   Collision2(user, a);

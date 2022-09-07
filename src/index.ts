@@ -1,16 +1,20 @@
-const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const ctx = canvas.getContext("2d")!;
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d')!;
 
 canvas.width = 600;
 canvas.height = 800;
-canvas.style.border = "1px solid black";
+canvas.style.border = '1px solid black';
+canvas.style.position = 'fixed';
+canvas.style.top = `calc(50% - ${canvas.height / 2}px)`;
+canvas.style.left = `calc(50% - ${canvas.width / 2}px)`;
 
-if (window.innerWidth < 600) {
-  canvas.width = window.innerWidth;
+while (window.innerWidth < canvas.width) {
+  canvas.width -= 100;
 }
-if (window.innerHeight < 800) {
-  canvas.height = window.innerHeight - 16;
+while (window.innerHeight < canvas.height) {
+  canvas.height -= 100;
 }
+
 type Fn = (stopedBlock: Block, block: Block) => boolean;
 
 // const img1 = new Image();
@@ -20,9 +24,9 @@ const user = {
   width: 50,
   height: 50,
   x: 100,
-  y: 700,
+  y: canvas.height - 50,
   draw() {
-    ctx.fillStyle = "green";
+    ctx.fillStyle = 'green';
     ctx.fillRect(this.x, this.y, this.width, this.height);
     // ctx.drawImage(img1, this.x, this.y, this.width, this.height);
   },
@@ -34,18 +38,16 @@ class Block {
   width: number;
   height: number;
 
-  constructor(location: string) {
+  constructor(location: number) {
     this.width = 50;
     this.height = 50;
-    const randomLocation = Math.random() * (canvas.width - this.width);
     this.x =
-      location === "left"
-        ? randomLocation / 2
-        : (randomLocation + canvas.width) / 2;
+      Math.random() * (canvas.width / DIFFICULTY - this.width) +
+      location * (canvas.width / DIFFICULTY);
     this.y = 0;
   }
   draw() {
-    ctx.fillStyle = "red";
+    ctx.fillStyle = 'red';
     ctx.fillRect(this.x, this.y, this.width, this.height);
   }
 }
@@ -63,49 +65,53 @@ class Bonus {
     this.y = 0;
   }
   draw() {
-    ctx.fillStyle = "blue";
+    ctx.fillStyle = 'blue';
     ctx.fillRect(this.x, this.y, this.width, this.height);
   }
 }
 
 let timer = 0;
 let score = 0;
-const cactusArray: Block[] = [];
-const bonusArray: Bonus[] = [];
-
-// 하나로 합치기
 let goLeft = false;
 let goRight = false;
 let leftTimer = 0;
 let rightTimer = 0;
+let canUseItem = true;
+let curStatus: 'intro' | 'start' | 'end' = 'intro';
 let animation: number;
-const BLOCK_TIME = 60;
-const MOVE_SPEED = 10;
-const TIMER_TIME = 3;
+
+var BLOCK_TIME = 60;
+var MOVE_SPEED = 10;
+var TIMER_TIME = 3;
+var DIFFICULTY = 4;
+
+const blockArray: Block[] = [];
+const bonusArray: Bonus[] = [];
+
+if (curStatus === 'intro') {
+  ctx.font = 'bold 48px san-serif';
+  ctx.fillText("Press 'Enter' to start!", 50, 400);
+}
 
 function Frame() {
   animation = requestAnimationFrame(Frame);
   timer++;
-  score++;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = "bold 48px san-serif";
-  ctx.strokeText(String(score), 100, 100);
+  ctx.font = 'bold 48px san-serif';
+  ctx.fillText(String(score), 100, 100);
 
-  if (timer % BLOCK_TIME === 0) {
-    const block = new Block("left");
-    cactusArray.push(block);
-  }
-  if ((timer + BLOCK_TIME / 2) % BLOCK_TIME === 0) {
-    const block2 = new Block("right");
-    cactusArray.push(block2);
+  for (let i = 0; i < DIFFICULTY; i++) {
+    if ((timer + (BLOCK_TIME / DIFFICULTY) * i) % BLOCK_TIME === 0) {
+      const block = new Block(i);
+      blockArray.push(block);
+    }
   }
 
-  cactusArray.forEach((block, i, array) => {
-    function CollisionCheck(fn: Fn) {
-      return array
+  blockArray.forEach((block, index, array) => {
+    const CollisionCheck = (fn: Fn) =>
+      array
         .filter((v) => v !== block)
         .findIndex((stopedBlock) => fn(stopedBlock, block));
-    }
     const collisionEachOther = CollisionCheck(Collision);
     const LeftCollisionEachOther = CollisionCheck(LeftCollision);
     const RightCollisionEachOther = CollisionCheck(RightCollision);
@@ -115,7 +121,12 @@ function Frame() {
     const pushingRight =
       RightCollisionEachOther !== -1 || RightCollision(user, block);
 
-    block.y < 900 ? !stacking && (block.y += 1) : array.splice(i, 1);
+    if (block.y < canvas.height) {
+      !stacking && (block.y += 1);
+    } else {
+      array.splice(index, 1);
+      score++;
+    }
 
     if (stacking) {
       GoLeft(block);
@@ -127,7 +138,8 @@ function Frame() {
     }
 
     if (block.y === 0) {
-      cancelAnimationFrame(animation);
+      window.cancelAnimationFrame(animation);
+      curStatus = 'end';
     }
 
     block.draw();
@@ -138,15 +150,15 @@ function Frame() {
     const bonus = new Bonus();
     bonusArray.push(bonus);
   }
-  bonusArray.forEach((bonus, i, array) => {
+  bonusArray.forEach((bonus, index, array) => {
     const collide =
       Collision(user, bonus) ||
       LeftCollision(user, bonus) ||
       RightCollision(user, bonus);
 
-    collide && (score += 1000);
+    collide && (score += 10);
 
-    bonus.y < 900 && !collide ? (bonus.y += 5) : array.splice(i, 1);
+    bonus.y < 900 && !collide ? (bonus.y += 5) : array.splice(index, 1);
 
     bonus.draw();
   });
@@ -193,30 +205,39 @@ function GoRight(thing: Block) {
   user.x + user.width < canvas.width && goRight && (thing.x += MOVE_SPEED);
 }
 
-// ---
-
-document.addEventListener("keydown", (key) => {
-  if (key.code === "ArrowLeft" || key.code === "KeyA") {
-    goLeft = true;
+document.addEventListener('keydown', (key) => {
+  switch (key.code) {
+    case 'Enter':
+      if (curStatus === 'intro') {
+        animation = requestAnimationFrame(Frame);
+        curStatus = 'start';
+      } else if (curStatus === 'end') {
+        blockArray.splice(0);
+        bonusArray.splice(0);
+        timer = 0;
+        score = 0;
+        canUseItem = true;
+        animation = requestAnimationFrame(Frame);
+        curStatus = 'start';
+      }
+      break;
+    case 'ArrowLeft':
+    case 'KeyA':
+      goLeft = true;
+      break;
+    case 'ArrowRight':
+    case 'KeyD':
+      goRight = true;
+      break;
+    case 'Space':
+      if (canUseItem === true) {
+        blockArray.splice(0);
+        canUseItem = false;
+      }
+      break;
+    case 'Escape':
+      if (curStatus === 'end') {
+        curStatus = 'intro';
+      }
   }
 });
-document.addEventListener("keydown", (key) => {
-  if (key.code === "ArrowRight" || key.code === "KeyD") {
-    goRight = true;
-  }
-});
-
-// document.addEventListener('keydown', (key) => {
-//   if (key.code === 'Space') {
-
-//   }
-// });
-
-document.addEventListener("keydown", (key) => {
-  if (key.code === "Enter") {
-    cancelAnimationFrame(animation);
-    animation = requestAnimationFrame(Frame);
-  }
-});
-
-// ctx.clearRect(0, 0, canvas.width, canvas.height);

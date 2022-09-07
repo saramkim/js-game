@@ -5,14 +5,16 @@ canvas.width = 600;
 canvas.height = 800;
 canvas.style.border = '1px solid black';
 canvas.style.position = 'fixed';
-canvas.style.top = `calc(50% - ${canvas.height / 2}px)`;
 canvas.style.left = `calc(50% - ${canvas.width / 2}px)`;
+canvas.style.top = `calc(50% - ${canvas.height / 2}px)`;
 
 while (window.innerWidth < canvas.width) {
-  canvas.width -= 100;
+  canvas.width -= 20;
+  canvas.style.left = `calc(50% - ${canvas.width / 2}px)`;
 }
 while (window.innerHeight < canvas.height) {
-  canvas.height -= 100;
+  canvas.height -= 50;
+  canvas.style.top = `calc(50% - ${canvas.height / 2}px)`;
 }
 
 type Fn = (stopedBlock: Block, block: Block) => boolean;
@@ -20,10 +22,10 @@ type Fn = (stopedBlock: Block, block: Block) => boolean;
 // const img1 = new Image();
 // img1.src = "bear.png";
 
-const user = {
+const player = {
   width: 50,
   height: 50,
-  x: 100,
+  x: (canvas.width - 50) / 2,
   y: canvas.height - 50,
   draw() {
     ctx.fillStyle = 'green';
@@ -79,26 +81,29 @@ let rightTimer = 0;
 let canUseItem = true;
 let curStatus: 'intro' | 'start' | 'end' = 'intro';
 let animation: number;
+let longTabTimer: NodeJS.Timeout;
 
 var BLOCK_TIME = 60;
 var MOVE_SPEED = 10;
 var TIMER_TIME = 3;
-var DIFFICULTY = 4;
+var DIFFICULTY: 1 | 2 | 3 | 4 | 5 | 6 = 3;
 
 const blockArray: Block[] = [];
 const bonusArray: Bonus[] = [];
 
 if (curStatus === 'intro') {
+  ctx.fillStyle = 'green';
   ctx.font = 'bold 48px san-serif';
-  ctx.fillText("Press 'Enter' to start!", 50, 400);
+  ctx.fillText('Block a Block', 50, 400);
+  ctx.font = 'bold 30px san-serif';
+  ctx.fillText(`Difficulty: ${String(DIFFICULTY)}`, 50, 300);
+  ctx.fillText("Press 'Enter' to start!", 50, 500);
 }
-
 function Frame() {
   animation = requestAnimationFrame(Frame);
   timer++;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = 'bold 48px san-serif';
-  ctx.fillText(String(score), 100, 100);
+  ctx.fillText(String(score), 50, 100);
 
   for (let i = 0; i < DIFFICULTY; i++) {
     if ((timer + (BLOCK_TIME / DIFFICULTY) * i) % BLOCK_TIME === 0) {
@@ -115,11 +120,11 @@ function Frame() {
     const collisionEachOther = CollisionCheck(Collision);
     const LeftCollisionEachOther = CollisionCheck(LeftCollision);
     const RightCollisionEachOther = CollisionCheck(RightCollision);
-    const stacking = collisionEachOther !== -1 || Collision(user, block);
+    const stacking = collisionEachOther !== -1 || Collision(player, block);
     const pushingLeft =
-      LeftCollisionEachOther !== -1 || LeftCollision(user, block);
+      LeftCollisionEachOther !== -1 || LeftCollision(player, block);
     const pushingRight =
-      RightCollisionEachOther !== -1 || RightCollision(user, block);
+      RightCollisionEachOther !== -1 || RightCollision(player, block);
 
     if (block.y < canvas.height) {
       !stacking && (block.y += 1);
@@ -140,6 +145,13 @@ function Frame() {
     if (block.y === 0) {
       window.cancelAnimationFrame(animation);
       curStatus = 'end';
+      ctx.clearRect(0, 200, canvas.width, 350);
+      ctx.fillStyle = 'green';
+      ctx.font = 'bold 48px san-serif';
+      ctx.fillText(String(score), 50, 300);
+      ctx.fillText('Game Over', 50, 400);
+      ctx.font = 'bold 30px san-serif';
+      ctx.fillText("Press 'Enter' to start!", 50, 500);
     }
 
     block.draw();
@@ -152,9 +164,9 @@ function Frame() {
   }
   bonusArray.forEach((bonus, index, array) => {
     const collide =
-      Collision(user, bonus) ||
-      LeftCollision(user, bonus) ||
-      RightCollision(user, bonus);
+      Collision(player, bonus) ||
+      LeftCollision(player, bonus) ||
+      RightCollision(player, bonus);
 
     collide && (score += 10);
 
@@ -164,8 +176,8 @@ function Frame() {
   });
 
   // control ------------
-  GoLeft(user);
-  GoRight(user);
+  GoLeft(player);
+  GoRight(player);
   goLeft && leftTimer++;
   goRight && rightTimer++;
   if (leftTimer > TIMER_TIME) {
@@ -177,7 +189,7 @@ function Frame() {
     rightTimer = 0;
   }
 
-  user.draw();
+  player.draw();
 }
 
 function Collision(pre: Block, cur: Block) {
@@ -199,10 +211,25 @@ function RightCollision(pre: Block, cur: Block) {
 }
 
 function GoLeft(thing: Block) {
-  user.x > 0 && goLeft && (thing.x -= MOVE_SPEED);
+  player.x > 0 && goLeft && (thing.x -= MOVE_SPEED);
 }
 function GoRight(thing: Block) {
-  user.x + user.width < canvas.width && goRight && (thing.x += MOVE_SPEED);
+  player.x + player.width < canvas.width && goRight && (thing.x += MOVE_SPEED);
+}
+
+function handleLeftEvent() {
+  if (curStatus === 'intro' && DIFFICULTY > 1) {
+    DIFFICULTY--;
+    ctx.clearRect(0, 100, 500, 250);
+    ctx.fillText(`Difficulty: ${String(DIFFICULTY)}`, 50, 300);
+  }
+}
+function handleRightEvent() {
+  if (curStatus === 'intro' && DIFFICULTY < 6) {
+    DIFFICULTY++;
+    ctx.clearRect(0, 100, 500, 250);
+    ctx.fillText(`Difficulty: ${String(DIFFICULTY)}`, 50, 300);
+  }
 }
 
 document.addEventListener('keydown', (key) => {
@@ -223,10 +250,12 @@ document.addEventListener('keydown', (key) => {
       break;
     case 'ArrowLeft':
     case 'KeyA':
+      handleLeftEvent();
       goLeft = true;
       break;
     case 'ArrowRight':
     case 'KeyD':
+      handleRightEvent();
       goRight = true;
       break;
     case 'Space':
@@ -237,7 +266,52 @@ document.addEventListener('keydown', (key) => {
       break;
     case 'Escape':
       if (curStatus === 'end') {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillText("Press 'Enter' to start!", 50, 400);
         curStatus = 'intro';
       }
   }
+});
+
+canvas.addEventListener('touchstart', (event) => {
+  const xTouch = event.changedTouches[0].clientX;
+  const yTouch = event.changedTouches[0].clientY;
+  if (curStatus === 'intro') {
+    longTabTimer = setTimeout(() => {
+      animation = requestAnimationFrame(Frame);
+      curStatus = 'start';
+    }, 1000);
+  } else if (curStatus === 'end') {
+    longTabTimer = setTimeout(() => {
+      blockArray.splice(0);
+      bonusArray.splice(0);
+      timer = 0;
+      score = 0;
+      canUseItem = true;
+      animation = requestAnimationFrame(Frame);
+      curStatus = 'start';
+    }, 1000);
+  }
+  if (yTouch < 300 && canUseItem) {
+    blockArray.splice(0);
+    canUseItem = false;
+  }
+  if (xTouch < canvas.width / 2) {
+    goLeft = true;
+  } else if (xTouch > canvas.width / 2) {
+    goRight = true;
+  }
+});
+canvas.addEventListener('touchend', (event) => {
+  const xTouch = event.changedTouches[0].clientX;
+  const yTouch = event.changedTouches[0].clientY;
+  clearTimeout(longTabTimer);
+  if (xTouch < canvas.width / 2) {
+    handleLeftEvent();
+  } else if (xTouch > canvas.width / 2) {
+    handleRightEvent();
+  }
+});
+canvas.addEventListener('touchmove', () => {
+  clearTimeout(longTabTimer);
 });

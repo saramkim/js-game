@@ -44,8 +44,8 @@ class Block {
     this.width = 50;
     this.height = 50;
     this.x =
-      Math.random() * (canvas.width / DIFFICULTY - this.width) +
-      location * (canvas.width / DIFFICULTY);
+      Math.random() * (canvas.width / difficulty - this.width) +
+      location * (canvas.width / difficulty);
     this.y = 0;
   }
   draw() {
@@ -73,40 +73,55 @@ class Bonus {
 }
 
 let timer = 0;
-let score = 0;
+let pointScore = 0;
+let timeScore = 0;
 let goLeft = false;
 let goRight = false;
 let leftTimer = 0;
 let rightTimer = 0;
+let mode: 'point' | 'time' = 'point';
+let difficulty: 1 | 2 | 3 | 4 | 5 | 6 = 3;
 let canUseItem = true;
 let curStatus: 'intro' | 'start' | 'end' = 'intro';
 let animation: number;
 let longTabTimer: NodeJS.Timeout;
 
-var BLOCK_TIME = 60;
+var BLOCK_TIME = 90;
 var MOVE_SPEED = 10;
 var TIMER_TIME = 3;
-var DIFFICULTY: 1 | 2 | 3 | 4 | 5 | 6 = 3;
 
 const blockArray: Block[] = [];
 const bonusArray: Bonus[] = [];
 
-if (curStatus === 'intro') {
+function IntroEvent() {
   ctx.fillStyle = 'green';
   ctx.font = 'bold 48px san-serif';
   ctx.fillText('Block a Block', 50, 400);
   ctx.font = 'bold 30px san-serif';
-  ctx.fillText(`Difficulty: ${String(DIFFICULTY)}`, 50, 300);
+  ctx.fillText(`Mode: ${mode.toUpperCase()}`, 50, 250);
+  mode === 'point' &&
+    ctx.fillText(`difficulty: ${String(difficulty)}`, 50, 300);
   ctx.fillText("Press 'Enter' to start!", 50, 500);
+}
+
+if (curStatus === 'intro') {
+  IntroEvent();
 }
 function Frame() {
   animation = requestAnimationFrame(Frame);
-  timer++;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillText(String(score), 50, 100);
+  timer++;
+  if (mode === 'time') {
+    timer % 40 === 0 && timeScore++;
+    timer % 1000 === 0 && difficulty < 6 && difficulty++;
+    ctx.fillText(String(timeScore), 50, 100);
+  }
+  if (mode === 'point') {
+    ctx.fillText(String(pointScore), 50, 100);
+  }
 
-  for (let i = 0; i < DIFFICULTY; i++) {
-    if ((timer + (BLOCK_TIME / DIFFICULTY) * i) % BLOCK_TIME === 0) {
+  for (let i = 0; i < difficulty; i++) {
+    if ((timer + (BLOCK_TIME / difficulty) * i) % BLOCK_TIME === 0) {
       const block = new Block(i);
       blockArray.push(block);
     }
@@ -130,7 +145,7 @@ function Frame() {
       !stacking && (block.y += 1);
     } else {
       array.splice(index, 1);
-      score++;
+      pointScore++;
     }
 
     if (stacking) {
@@ -142,13 +157,14 @@ function Frame() {
       GoRight(block);
     }
 
-    if (block.y === 0) {
+    if (block.y <= 0) {
       window.cancelAnimationFrame(animation);
       curStatus = 'end';
       ctx.clearRect(0, 200, canvas.width, 350);
       ctx.fillStyle = 'green';
       ctx.font = 'bold 48px san-serif';
-      ctx.fillText(String(score), 50, 300);
+      mode === 'point' && ctx.fillText(String(pointScore), 50, 300);
+      mode === 'time' && ctx.fillText(String(timeScore), 50, 300);
       ctx.fillText('Game Over', 50, 400);
       ctx.font = 'bold 30px san-serif';
       ctx.fillText("Press 'Enter' to start!", 50, 500);
@@ -168,9 +184,12 @@ function Frame() {
       LeftCollision(player, bonus) ||
       RightCollision(player, bonus);
 
-    collide && (score += 10);
+    mode === 'point' && collide && (pointScore += 10);
+    mode === 'time' && collide && (timeScore += 10);
 
-    bonus.y < 900 && !collide ? (bonus.y += 5) : array.splice(index, 1);
+    bonus.y < canvas.height && !collide
+      ? (bonus.y += 5)
+      : array.splice(index, 1);
 
     bonus.draw();
   });
@@ -218,35 +237,54 @@ function GoRight(thing: Block) {
 }
 
 function handleLeftEvent() {
-  if (curStatus === 'intro' && DIFFICULTY > 1) {
-    DIFFICULTY--;
-    ctx.clearRect(0, 100, 500, 250);
-    ctx.fillText(`Difficulty: ${String(DIFFICULTY)}`, 50, 300);
+  if (curStatus === 'intro' && mode === 'point' && difficulty > 1) {
+    difficulty--;
+    ctx.clearRect(0, 250, 500, 50);
+    ctx.fillText(`difficulty: ${String(difficulty)}`, 50, 300);
   }
 }
 function handleRightEvent() {
-  if (curStatus === 'intro' && DIFFICULTY < 6) {
-    DIFFICULTY++;
-    ctx.clearRect(0, 100, 500, 250);
-    ctx.fillText(`Difficulty: ${String(DIFFICULTY)}`, 50, 300);
+  if (curStatus === 'intro' && mode === 'point' && difficulty < 6) {
+    difficulty++;
+    ctx.clearRect(0, 250, 500, 50);
+    ctx.fillText(`difficulty: ${String(difficulty)}`, 50, 300);
+  }
+}
+function handleSpaceEvent() {
+  if (curStatus === 'intro') {
+    ctx.clearRect(0, 200, 500, 130);
+    if (mode === 'point') {
+      mode = 'time';
+    } else if (mode === 'time') {
+      mode = 'point';
+      ctx.fillText(`difficulty: ${String(difficulty)}`, 50, 300);
+    }
+    ctx.fillText(`Mode: ${mode.toUpperCase()}`, 50, 250);
+  } else if (curStatus === 'start' && canUseItem === true) {
+    blockArray.splice(0);
+    canUseItem = false;
+  }
+}
+function startEvent() {
+  if (curStatus === 'intro') {
+    animation = requestAnimationFrame(Frame);
+    mode === 'time' && (difficulty = 1);
+    curStatus = 'start';
+  } else if (curStatus === 'end') {
+    blockArray.splice(0);
+    bonusArray.splice(0);
+    timer = 0;
+    pointScore = 0;
+    canUseItem = true;
+    animation = requestAnimationFrame(Frame);
+    curStatus = 'start';
   }
 }
 
 document.addEventListener('keydown', (key) => {
   switch (key.code) {
     case 'Enter':
-      if (curStatus === 'intro') {
-        animation = requestAnimationFrame(Frame);
-        curStatus = 'start';
-      } else if (curStatus === 'end') {
-        blockArray.splice(0);
-        bonusArray.splice(0);
-        timer = 0;
-        score = 0;
-        canUseItem = true;
-        animation = requestAnimationFrame(Frame);
-        curStatus = 'start';
-      }
+      startEvent();
       break;
     case 'ArrowLeft':
     case 'KeyA':
@@ -259,42 +297,27 @@ document.addEventListener('keydown', (key) => {
       goRight = true;
       break;
     case 'Space':
-      if (canUseItem === true) {
-        blockArray.splice(0);
-        canUseItem = false;
-      }
+      handleSpaceEvent();
       break;
-    case 'Escape':
-      if (curStatus === 'end') {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillText("Press 'Enter' to start!", 50, 400);
-        curStatus = 'intro';
-      }
+    // case 'Escape':
+    //   if (curStatus === 'end') {
+    //     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //     IntroEvent();
+    //     curStatus = 'intro';
+    //   }
   }
 });
 
 canvas.addEventListener('touchstart', (event) => {
   const xTouch = event.changedTouches[0].clientX;
   const yTouch = event.changedTouches[0].clientY;
-  if (curStatus === 'intro') {
-    longTabTimer = setTimeout(() => {
-      animation = requestAnimationFrame(Frame);
-      curStatus = 'start';
-    }, 1000);
-  } else if (curStatus === 'end') {
-    longTabTimer = setTimeout(() => {
-      blockArray.splice(0);
-      bonusArray.splice(0);
-      timer = 0;
-      score = 0;
-      canUseItem = true;
-      animation = requestAnimationFrame(Frame);
-      curStatus = 'start';
-    }, 1000);
-  }
-  if (yTouch < 300 && canUseItem) {
-    blockArray.splice(0);
-    canUseItem = false;
+
+  longTabTimer = setTimeout(() => {
+    startEvent();
+  }, 1000);
+
+  if (yTouch < 300) {
+    handleSpaceEvent();
   }
   if (xTouch < canvas.width / 2) {
     goLeft = true;

@@ -2,23 +2,25 @@
   "name": "game",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "author": "",
+  "main": "bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve --open",
-    "build": "webpack"
+    "build": "webpack --mode=production",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/saramkim/js-game.git"
   },
   "keywords": [],
-  "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/saramkim/js-game/issues"
   },
-  "homepage": "https://github.com/saramkim/js-game#readme",
+  "homepage": "https://github.com/saramkim/js-game",
   "devDependencies": {
     "@babel/core": "^7.19.0",
     "@babel/preset-env": "^7.19.0",

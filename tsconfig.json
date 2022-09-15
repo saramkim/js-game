@@ -10,7 +10,8 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "noImplicitAny": true,
-    "lib": ["ES2015", "DOM", "DOM.Iterable"]
+    "lib": ["ES2015", "DOM", "DOM.Iterable"],
+    "typeRoots": ["./types", "./node_modules/@types"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

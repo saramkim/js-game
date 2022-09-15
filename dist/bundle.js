@@ -68,7 +68,7 @@
     w = 'point',
     x = 3,
     y = !0,
-    p = 'intro',
+    p = 'main',
     g = [],
     m = [];
   function T() {
@@ -159,7 +159,7 @@
     c.x + c.width < t.width && f && (i.x += 10);
   }
   function k() {
-    'intro' === p &&
+    'main' === p &&
       'point' === w &&
       x > 1 &&
       (x--,
@@ -167,7 +167,7 @@
       i.fillText('difficulty: '.concat(String(x)), 50, 300));
   }
   function A() {
-    'intro' === p &&
+    'main' === p &&
       'point' === w &&
       x < 6 &&
       (x++,
@@ -175,7 +175,7 @@
       i.fillText('difficulty: '.concat(String(x)), 50, 300));
   }
   function M() {
-    'intro' === p
+    'main' === p
       ? (i.clearRect(0, 200, 500, 130),
         'point' === w
           ? (w = 'time')
@@ -186,7 +186,7 @@
       : 'start' === p && !0 === y && (g.splice(0), (y = !1));
   }
   function L() {
-    'intro' === p
+    'main' === p
       ? ((e = requestAnimationFrame(T)), 'time' === w && (x = 1), (p = 'start'))
       : 'end' === p &&
         (g.splice(0),
@@ -197,7 +197,7 @@
         (e = requestAnimationFrame(T)),
         (p = 'start'));
   }
-  'intro' === p &&
+  'main' === p &&
     ((i.fillStyle = 'green'),
     (i.font = 'bold 48px san-serif'),
     i.fillText('Block a Block', 50, 400),

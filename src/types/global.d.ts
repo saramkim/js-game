@@ -7,7 +7,7 @@ declare global {
 
   var mode: 'point' | 'time';
   var difficulty: 1 | 2 | 3 | 4 | 5 | 6;
-  var curStatus: 'intro' | 'start' | 'end';
+  var curStatus: 'intro' | 'main' | 'start' | 'end';
   var timer: number;
   var leftTimer: number;
   var rightTimer: number;

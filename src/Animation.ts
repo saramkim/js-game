@@ -1,6 +1,7 @@
 import player from './blocks/Player';
 import Block from './blocks/Block';
 import Bonus from './blocks/Bonus';
+import End from './pages/End';
 
 type Fn = (stopedBlock: Block, block: Block) => boolean;
 
@@ -42,10 +43,14 @@ const RightCollision = (pre: Block, cur: Block) => {
 };
 
 const GoLeft = (thing: Block) => {
-  player.x > 0 && goLeft && (thing.x -= MOVE_SPEED);
+  if (player.x >= 0) {
+    goLeft && (thing.x -= MOVE_SPEED);
+  }
 };
 const GoRight = (thing: Block) => {
-  player.x + player.width < canvas.width && goRight && (thing.x += MOVE_SPEED);
+  if (player.x + player.width <= canvas.width) {
+    goRight && (thing.x += MOVE_SPEED);
+  }
 };
 
 const Frame = () => {
@@ -104,14 +109,7 @@ const Frame = () => {
     if (block.y === 0) {
       stopAnimation();
       curStatus = 'end';
-      ctx.clearRect(0, 200, canvas.width, 350);
-      ctx.fillStyle = 'green';
-      ctx.font = 'bold 48px san-serif';
-      mode === 'point' && ctx.fillText(String(pointScore), 50, 300);
-      mode === 'time' && ctx.fillText(String(timeScore), 50, 300);
-      ctx.fillText('Game Over', 50, 400);
-      ctx.font = 'bold 30px san-serif';
-      ctx.fillText("Press 'Enter' to start!", 50, 500);
+      End();
     }
 
     block.draw();

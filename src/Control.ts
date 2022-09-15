@@ -1,10 +1,10 @@
 import { startAnimation } from './Animation';
-import Intro from './Intro';
+import Main from './pages/Main';
 
 let longTabTimer: NodeJS.Timeout;
 
 const startEvent = () => {
-  if (curStatus === 'intro') {
+  if (curStatus === 'main') {
     startAnimation();
     mode === 'time' && (difficulty = 1);
     curStatus = 'start';
@@ -21,21 +21,21 @@ const startEvent = () => {
   }
 };
 const leftEvent = () => {
-  if (curStatus === 'intro' && mode === 'point' && difficulty > 1) {
+  if (curStatus === 'main' && mode === 'point' && difficulty > 1) {
     difficulty--;
     ctx.clearRect(0, 250, 500, 50);
     ctx.fillText(`difficulty: ${String(difficulty)}`, 50, 300);
   }
 };
 const rightEvent = () => {
-  if (curStatus === 'intro' && mode === 'point' && difficulty < 6) {
+  if (curStatus === 'main' && mode === 'point' && difficulty < 6) {
     difficulty++;
     ctx.clearRect(0, 250, 500, 50);
     ctx.fillText(`difficulty: ${String(difficulty)}`, 50, 300);
   }
 };
 const spaceEvent = () => {
-  if (curStatus === 'intro') {
+  if (curStatus === 'main') {
     ctx.clearRect(0, 200, 500, 130);
     if (mode === 'point') {
       mode = 'time';
@@ -51,8 +51,8 @@ const spaceEvent = () => {
 };
 const exitEvent = () => {
   if (curStatus === 'end') {
-    curStatus = 'intro';
-    Intro();
+    curStatus = 'main';
+    Main();
   }
 };
 

@@ -1,5 +1,5 @@
 import { startAnimation } from './Animation';
-import Main from './pages/Main';
+import Main from '../pages/Main';
 
 let longTabTimer: NodeJS.Timeout;
 
@@ -89,11 +89,11 @@ canvas.addEventListener('touchstart', (event) => {
   if (yTouch < canvas.height / 2) {
     longTabTimer = setTimeout(() => {
       exitEvent();
-    }, 1000);
+    }, 500);
   } else {
     longTabTimer = setTimeout(() => {
       startEvent();
-    }, 1000);
+    }, 500);
 
     if (xTouch < canvas.width / 2) {
       curStatus === 'start' && (goLeft = true);

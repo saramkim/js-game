@@ -6,7 +6,7 @@
   "main": "bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack serve --open",
+    "start": "webpack serve --open --mode=development",
     "build": "webpack --mode=production",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"

@@ -1,7 +1,7 @@
-import player from './blocks/Player';
-import Block from './blocks/Block';
-import Bonus from './blocks/Bonus';
-import End from './pages/End';
+import player from '../blocks/Player';
+import Block from '../blocks/Block';
+import Bonus from '../blocks/Bonus';
+import End from '../pages/End';
 
 type Fn = (stopedBlock: Block, block: Block) => boolean;
 

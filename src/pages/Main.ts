@@ -8,7 +8,13 @@ function Main() {
   mode === 'point' &&
     ctx.fillText(`difficulty: ${String(difficulty)}`, 50, 300);
   ctx.fillStyle = 'red';
-  ctx.fillText("Press 'Enter' to start!", 50, 500);
+  if (canvas.width === 600) {
+    // on PC
+    ctx.fillText("Press 'Enter' to start!", 50, 500);
+  } else {
+    // on Mobile
+    ctx.fillText('Long press to start!', 50, 500);
+  }
   ctx.fillStyle = 'green';
 }
 

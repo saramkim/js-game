@@ -7,6 +7,13 @@ function End() {
   ctx.fillText('Game Over', 50, 400);
   ctx.font = 'bold 30px san-serif';
   ctx.fillStyle = 'red';
-  ctx.fillText('Enter : Restart  /  ESC : Go to Main', 50, 500);
+  if (canvas.width === 600) {
+    // on PC
+    ctx.fillText('Enter : Restart  /  ESC : Go to Main', 50, 500);
+  } else {
+    // on Mobile
+    ctx.fillText('Go to Main!', 150, 300);
+    ctx.fillText('Press to Restart!', 50, 500);
+  }
 }
 export default End;

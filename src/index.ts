@@ -1,15 +1,14 @@
 import './global';
-import './Control';
+import './algorithms/Control';
 import Main from './pages/Main';
 import Intro from './pages/Intro';
 
 Intro();
 
-addEventListener(
-  'keydown',
-  () => {
-    curStatus = 'main';
-    Main();
-  },
-  { once: true }
-);
+const goToMain = () => {
+  curStatus = 'main';
+  Main();
+};
+
+addEventListener('keydown', goToMain, { once: true });
+addEventListener('touchend', goToMain, { once: true });

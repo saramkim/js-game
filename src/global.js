@@ -1,21 +1,25 @@
 global.canvas = document.getElementById('canvas');
 global.ctx = canvas.getContext('2d');
 
-canvas.width = 600;
-canvas.height = 800;
-canvas.style.border = '1px solid black';
+if (window.innerWidth < 600) {
+  canvas.width = window.innerWidth;
+} else {
+  canvas.width = 600;
+}
+
+if (window.innerHeight < 800) {
+  canvas.height = 750;
+  while (canvas.height > window.innerHeight) {
+    canvas.height -= 50;
+  }
+} else {
+  canvas.height = 800;
+}
+
+canvas.style.boxShadow = '0 0 0 1px black inset';
 canvas.style.position = 'fixed';
 canvas.style.left = `calc(50% - ${canvas.width / 2}px)`;
 canvas.style.top = `calc(50% - ${canvas.height / 2}px)`;
-
-while (window.innerWidth < canvas.width) {
-  canvas.width -= 6;
-  canvas.style.left = `calc(50% - ${canvas.width / 2}px)`;
-}
-while (window.innerHeight < canvas.height) {
-  canvas.height -= 50;
-  canvas.style.top = `calc(50% - ${canvas.height / 2}px)`;
-}
 
 global.mode = 'point';
 global.curStatus = 'intro';

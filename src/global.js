@@ -1,10 +1,15 @@
 global.canvas = document.getElementById('canvas');
 global.ctx = canvas.getContext('2d');
 
-if (window.innerWidth < 600) {
-  canvas.width = window.innerWidth;
+global.CANVAS_WIDTH = 610;
+
+if (window.innerWidth < CANVAS_WIDTH) {
+  canvas.width = CANVAS_WIDTH;
+  while (canvas.width > window.innerWidth) {
+    canvas.width -= 20;
+  }
 } else {
-  canvas.width = 600;
+  canvas.width = CANVAS_WIDTH;
 }
 
 if (window.innerHeight < 800) {

@@ -17,6 +17,8 @@ declare global {
   var goRight: boolean;
   var canUseItem: boolean;
 
+  var CANVAS_WIDTH: number;
+
   var blockArray: Block[];
   var bonusArray: Bonus[];
 }

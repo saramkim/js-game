@@ -11,6 +11,12 @@ const player = {
     ctx.fillRect(this.x, this.y, this.width, this.height);
     // ctx.drawImage(img1, this.x, this.y, this.width, this.height);
   },
+  moveLeft(speed: number) {
+    this.x -= speed;
+  },
+  moveRight(speed: number) {
+    this.x += speed;
+  },
 };
 
 export default player;

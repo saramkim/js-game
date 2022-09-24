@@ -6,8 +6,8 @@ import End from '../pages/End';
 type Fn = (stopedBlock: Block, block: Block) => boolean;
 
 const BLOCK_TIME = 90;
-const TIMER_TIME = 3;
 const MOVE_SPEED = 10;
+const MOVE_TIME = 4;
 
 let animation: number;
 
@@ -24,33 +24,22 @@ const stopAnimation = () => {
   cancelAnimationFrame(animation);
 };
 
-const Collision = (pre: Block, cur: Block) => {
+const Collision = (pre: Bonus, cur: Bonus) => {
   const xCollision = Math.abs(pre.x - cur.x) < pre.width;
   const yCollision = pre.y - cur.y === pre.height;
   return xCollision && yCollision;
 };
 
-const LeftCollision = (pre: Block, cur: Block) => {
+const LeftCollision = (pre: Bonus, cur: Bonus) => {
   const xCollision = pre.x - cur.x <= pre.width && pre.x - cur.x > 0;
   const yCollision = Math.abs(pre.y - cur.y) < pre.height;
   return xCollision && yCollision;
 };
 
-const RightCollision = (pre: Block, cur: Block) => {
+const RightCollision = (pre: Bonus, cur: Bonus) => {
   const xCollision = cur.x - pre.x <= pre.width && cur.x - pre.x > 0;
   const yCollision = Math.abs(pre.y - cur.y) < pre.height;
   return xCollision && yCollision;
-};
-
-const GoLeft = (thing: Block) => {
-  if (player.x >= 0) {
-    goLeft && (thing.x -= MOVE_SPEED);
-  }
-};
-const GoRight = (thing: Block) => {
-  if (player.x + player.width <= canvas.width) {
-    goRight && (thing.x += MOVE_SPEED);
-  }
 };
 
 const Frame = () => {
@@ -74,13 +63,10 @@ const Frame = () => {
       blockArray.push(block);
     }
   }
-
   // Block Algorithm
   blockArray.forEach((block, index, array) => {
     const CollisionCheck = (fn: Fn) =>
-      array
-        .filter((v) => v !== block)
-        .findIndex((stopedBlock) => fn(stopedBlock, block));
+      array.findIndex((otherBlock) => fn(otherBlock, block));
     const collisionEachOther = CollisionCheck(Collision);
     const LeftCollisionEachOther = CollisionCheck(LeftCollision);
     const RightCollisionEachOther = CollisionCheck(RightCollision);
@@ -98,12 +84,16 @@ const Frame = () => {
     }
 
     if (stacking) {
-      GoLeft(block);
-      GoRight(block);
+      if (goLeft) {
+        MoveLeft(block);
+      }
+      if (goRight) {
+        MoveRight(block);
+      }
     } else if (pushingLeft) {
-      GoLeft(block);
+      MoveLeft(block);
     } else if (pushingRight) {
-      GoRight(block);
+      MoveRight(block);
     }
 
     if (block.y === 0) {
@@ -115,11 +105,12 @@ const Frame = () => {
     block.draw();
   });
 
-  // Bonus Algorithm
+  // Make Bonus
   if (timer % 900 === 0) {
     const bonus = new Bonus();
     bonusArray.push(bonus);
   }
+  // Bonus Algorithm
   bonusArray.forEach((bonus, index, array) => {
     const collide =
       Collision(player, bonus) ||
@@ -137,20 +128,32 @@ const Frame = () => {
   });
 
   // Control Algorithm
-  GoLeft(player);
-  GoRight(player);
-  goLeft && leftTimer++;
-  goRight && rightTimer++;
-  if (leftTimer > TIMER_TIME) {
+  if (goLeft) {
+    MoveLeft(player);
+    leftTimer++;
+  }
+  if (goRight) {
+    MoveRight(player);
+    rightTimer++;
+  }
+
+  if (leftTimer === MOVE_TIME) {
     goLeft = false;
     leftTimer = 0;
   }
-  if (rightTimer > TIMER_TIME) {
+  if (rightTimer === MOVE_TIME) {
     goRight = false;
     rightTimer = 0;
   }
 
   player.draw();
 };
+
+function MoveLeft(thing: Block) {
+  player.x > 0 && thing.moveLeft(MOVE_SPEED);
+}
+function MoveRight(thing: Block) {
+  player.x + player.width < canvas.width && thing.moveRight(MOVE_SPEED);
+}
 
 export default Frame;

@@ -16,6 +16,12 @@ class Block {
     ctx.fillStyle = 'red';
     ctx.fillRect(this.x, this.y, this.width, this.height);
   }
+  moveLeft(speed: number) {
+    this.x -= speed;
+  }
+  moveRight(speed: number) {
+    this.x += speed;
+  }
 }
 
 export default Block;

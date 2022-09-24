@@ -1,5 +1,5 @@
 function Intro() {
-  if (canvas.width === 600) {
+  if (canvas.width === CANVAS_WIDTH) {
     // on PC
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = 'green';
@@ -12,7 +12,7 @@ function Intro() {
     ctx.fillText('→ / d : Move to the Right', 50, 430);
     ctx.fillText('Increase the Difficulty', 160, 480);
     ctx.fillText('Space : Use Skill (1time)', 50, 560);
-    ctx.fillText('Change Mode', 160, 610);
+    ctx.fillText('Change Mode', 160, CANVAS_WIDTH);
     ctx.fillStyle = 'red';
     ctx.fillText('Press any key to continue!', 50, 720);
   } else {

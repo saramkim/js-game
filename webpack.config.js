@@ -36,6 +36,9 @@ module.exports = {
     }),
   ],
   devServer: {
+    static: {
+      directory: path.resolve(__dirname, 'dist'),
+    },
     host: 'localhost',
     port: 5500,
     hot: true,

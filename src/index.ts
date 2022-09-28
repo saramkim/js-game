@@ -41,7 +41,7 @@ function MainEvent() {
       this.score = 0;
       this.blockInterval = 90;
       this.beamInterval = 50;
-      this.difficulty = 6;
+      this.difficulty = 1;
       this.beamCount = 1;
     }
     update(animation: number) {
@@ -51,6 +51,10 @@ function MainEvent() {
       this.player.update(this.input.keys);
 
       // block
+      if (this.timer % 1500 === 0) {
+        this.difficulty++;
+        this.blockInterval--;
+      }
       for (let i = 0; i < this.difficulty; i++) {
         if (
           (this.timer + Math.round(this.blockInterval / this.difficulty) * i) %
@@ -94,8 +98,8 @@ function MainEvent() {
       });
 
       // item
-      if (this.timer % 500 === 0) this.addItem('beamSpeed');
-      if (this.timer % 1000 === 0) this.addItem('beamCount');
+      if (this.timer % 1500 === 0) this.addItem('beamSpeed');
+      if (this.timer % 4000 === 0) this.addItem('beamCount');
       this.items.forEach((item, index, items) => {
         item.update();
 
@@ -103,11 +107,11 @@ function MainEvent() {
           items.splice(index, 1);
 
           if (item.type === 'beamSpeed') {
-            if (this.beamInterval > 10) this.beamInterval -= 10;
-            else if (this.beamInterval <= 10) this.beamInterval -= 1;
-            else if (this.beamInterval === 1) return;
+            if (this.beamInterval > 20) this.beamInterval -= 10;
+            else if (this.beamInterval > 10) this.beamInterval -= 2;
+            else if (this.beamInterval > 1) this.beamInterval -= 1;
           } else if (item.type === 'beamCount') {
-            if (this.beamCount !== 6) this.beamCount++;
+            if (this.beamCount < 10) this.beamCount++;
           }
         }
 

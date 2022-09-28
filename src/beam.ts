@@ -9,10 +9,11 @@ class Beam {
   speed: number;
   overScreen: boolean;
 
-  constructor(player: Player) {
+  constructor(player: Player, count: number, index: number) {
     this.width = 10;
     this.height = 30;
-    this.x = player.x + (player.width - this.width) / 2;
+    this.x =
+      player.x + ((player.width - this.width) / (count + 1)) * (index + 1);
     this.y = player.y;
     this.speed = 10;
     this.overScreen = false;
@@ -25,9 +26,8 @@ class Beam {
   }
 
   draw(context: CanvasRenderingContext2D) {
-    context.fillStyle = 'green';
+    context.fillStyle = 'rgb(0,255,0)';
     context.fillRect(this.x, this.y, this.width, this.height);
-    // ctx.drawImage(img1, this.x, this.y, this.width, this.height);
   }
 }
 

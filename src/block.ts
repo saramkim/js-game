@@ -8,8 +8,10 @@ class Block {
   fallSpeed: number;
   moveSpeed: number;
   overScreen: boolean;
+  HP: number;
+  color: string;
 
-  constructor(game: any, difficulty: number, location: number) {
+  constructor(game: any, difficulty: number, location: number, timer: number) {
     this.game = game;
     this.width = 50;
     this.height = 50;
@@ -21,17 +23,23 @@ class Block {
     this.fallSpeed = 1;
     this.moveSpeed = 10;
     this.overScreen = false;
+    this.HP = Math.ceil(timer / 3000);
+    this.color = 'black';
   }
 
   update() {
     this.x += this.speed;
     this.y += this.fallSpeed;
 
+    if (this.HP === 3) this.color = 'rgb(255,0,255)';
+    if (this.HP === 2) this.color = 'rgb(255,85,255)';
+    if (this.HP === 1) this.color = 'rgb(255,170,255)';
+
     if (this.y > this.game.height) this.overScreen = true;
   }
 
   draw(context: CanvasRenderingContext2D) {
-    context.fillStyle = 'red';
+    context.fillStyle = this.color;
     context.fillRect(this.x, this.y, this.width, this.height);
     // ctx.drawImage(img1, this.x, this.y, this.width, this.height);
   }

@@ -10,16 +10,18 @@ class Player {
   vx: number;
   vy: number;
   moveSpeed: number;
+  HP: number;
 
   constructor(game: any) {
     this.game = game;
     this.width = 50;
     this.height = 50;
     this.x = (this.game.width - 50) / 2;
-    this.y = this.game.height - this.height;
+    this.y = this.game.height - 200;
     this.vx = 0;
     this.vy = 0;
     this.moveSpeed = 10;
+    this.HP = 3;
   }
   update(input: string[]) {
     this.x += this.vx;

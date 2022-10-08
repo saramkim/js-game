@@ -72,7 +72,7 @@ export class InputHandler {
       }
       if (
         this.touchY < (window.innerHeight * 4) / 6 &&
-        this.touchY > window.innerHeight / 2 &&
+        // this.touchY > window.innerHeight / 2 &&
         this.keys.indexOf('touchDown') === -1
       ) {
         this.keys.push('touchUp');

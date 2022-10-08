@@ -9,7 +9,8 @@ import UI from './UI';
 function MainEvent() {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
   const ctx = canvas.getContext('2d')!;
-  const FSbtn = document.getElementById('fullScreen') as HTMLElement;
+  const startBtn = document.getElementById('start-btn') as HTMLElement;
+  const introduction = document.getElementById('introduction') as HTMLElement;
   canvas.width = 600;
   canvas.height = 900;
 
@@ -205,7 +206,20 @@ function MainEvent() {
     game.update(animation);
     game.draw(ctx);
   }
-  animate();
+
+  function gameStart() {
+    animate();
+    introduction.style.display = 'none';
+    startBtn.style.display = 'none';
+    if (!document.fullscreenElement) {
+      canvas.requestFullscreen().catch((err) => {
+        alert(`${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }
+  startBtn.addEventListener('click', gameStart);
 
   function Collision(one: any, another: any) {
     const xCollision =
@@ -216,17 +230,6 @@ function MainEvent() {
       Math.abs(one.y + one.height - (another.y + another.height)) <= one.height;
     return xCollision && yCollision;
   }
-
-  function fullScreen() {
-    if (!document.fullscreenElement) {
-      canvas.requestFullscreen().catch((err) => {
-        alert(`${err.message}`);
-      });
-    } else {
-      document.exitFullscreen();
-    }
-  }
-  FSbtn.addEventListener('click', fullScreen);
 }
 
 window.addEventListener('load', MainEvent);

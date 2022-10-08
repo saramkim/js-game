@@ -23,6 +23,10 @@
 html,
 body {
   height: 100%;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 img,
 picture,
@@ -33,7 +37,6 @@ svg {
   max-width: 100%;
 }
 button {
-  background: none;
   border: 0;
   cursor: pointer;
 }
@@ -46,9 +49,37 @@ table {
 }
 
 #canvas {
-  border: 3px solid black;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  background-color: white;
+}
+
+#fullScreen {
+  position: absolute;
+  font-size: 20px;
+  padding: 10px;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#controler {
+  z-index: 10;
+  position: absolute;
+  top: 50%;
+  height: 50%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+}
+.control-btn {
+  border: 1px solid white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
 }

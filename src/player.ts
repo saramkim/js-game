@@ -25,9 +25,17 @@ class Player {
   }
   update(input: string[]) {
     this.x += this.vx;
-    if (input.includes('ArrowLeft') || input.includes('KeyA'))
+    if (
+      input.includes('ArrowLeft') ||
+      input.includes('KeyA') ||
+      input.includes('touchLeft')
+    )
       this.vx = -this.moveSpeed;
-    else if (input.includes('ArrowRight') || input.includes('KeyD'))
+    else if (
+      input.includes('ArrowRight') ||
+      input.includes('KeyD') ||
+      input.includes('touchRight')
+    )
       this.vx = this.moveSpeed;
     else this.vx = 0;
     if (this.x < 0) this.x = 0;
@@ -35,9 +43,17 @@ class Player {
       this.x = this.game.width - this.width;
 
     this.y += this.vy;
-    if (input.includes('ArrowUp') || input.includes('KeyW'))
+    if (
+      input.includes('ArrowUp') ||
+      input.includes('KeyW') ||
+      input.includes('touchUp')
+    )
       this.vy = -this.moveSpeed;
-    else if (input.includes('ArrowDown') || input.includes('KeyS'))
+    else if (
+      input.includes('ArrowDown') ||
+      input.includes('KeyS') ||
+      input.includes('touchDown')
+    )
       this.vy = this.moveSpeed;
     else this.vy = 0;
 
@@ -53,8 +69,10 @@ class Player {
     // ctx.drawImage(img1, this.x, this.y, this.width, this.height);
   }
 
-  onBottom() {
-    return;
+  restart() {
+    this.x = (this.game.width - 50) / 2;
+    this.y = this.game.height - 200;
+    this.HP = 3;
   }
 }
 

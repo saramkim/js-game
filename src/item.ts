@@ -14,10 +14,15 @@ class Item {
     this.height = 50;
     this.x = Math.random() * (game.width - this.width);
     this.y = 0;
-    this.speed = 10;
+    this.speed = 8;
     this.overScreen = false;
     this.type = type;
-    this.color = { beamSpeed: 'blue', beamCount: 'gold' }[this.type];
+    this.color = {
+      beamSpeed: 'blue',
+      beamCount: 'rgb(0,255,0)',
+      skill: 'skyblue',
+      life: 'gold',
+    }[this.type];
   }
 
   update() {

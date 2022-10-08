@@ -9,6 +9,7 @@ import UI from './UI';
 function MainEvent() {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
   const ctx = canvas.getContext('2d')!;
+  const FSbtn = document.getElementById('fullScreen') as HTMLElement;
   canvas.width = 600;
   canvas.height = 900;
 
@@ -27,11 +28,13 @@ function MainEvent() {
     beamInterval: number;
     difficulty: number;
     beamCount: number;
+    skill: number;
+    gameOver: boolean;
 
     constructor(width: number, height: number) {
       this.width = width;
       this.height = height;
-      this.input = new InputHandler();
+      this.input = new InputHandler(this);
       this.player = new Player(this);
       this.UI = new UI(this, this.player);
       this.blocks = [];
@@ -39,11 +42,14 @@ function MainEvent() {
       this.items = [];
       this.timer = 0;
       this.score = 0;
-      this.blockInterval = 90;
+      this.blockInterval = 140;
       this.beamInterval = 50;
-      this.difficulty = 1;
+      this.difficulty = 2;
       this.beamCount = 1;
+      this.skill = 1;
+      this.gameOver = false;
     }
+
     update(animation: number) {
       this.timer++;
 
@@ -53,7 +59,7 @@ function MainEvent() {
       // block
       if (this.timer % 1500 === 0) {
         this.difficulty++;
-        this.blockInterval--;
+        this.blockInterval -= 2;
       }
       for (let i = 0; i < this.difficulty; i++) {
         if (
@@ -66,7 +72,10 @@ function MainEvent() {
       }
       this.blocks.forEach((block, index, blocks) => {
         if (Collision(this.player, block)) {
-          if (this.player.HP === 1) cancelAnimationFrame(animation);
+          if (this.player.HP === 1) {
+            cancelAnimationFrame(animation);
+            this.gameOver = true;
+          }
           this.player.HP--;
           blocks.splice(index, 1);
         }
@@ -99,19 +108,26 @@ function MainEvent() {
 
       // item
       if (this.timer % 1500 === 0) this.addItem('beamSpeed');
+      if (this.timer % 3000 === 0) this.addItem('life');
       if (this.timer % 4000 === 0) this.addItem('beamCount');
+      if (this.timer % 6666 === 0) this.addItem('skill');
       this.items.forEach((item, index, items) => {
         item.update();
 
         if (Collision(this.player, item)) {
           items.splice(index, 1);
 
-          if (item.type === 'beamSpeed') {
-            if (this.beamInterval > 20) this.beamInterval -= 10;
-            else if (this.beamInterval > 10) this.beamInterval -= 2;
-            else if (this.beamInterval > 1) this.beamInterval -= 1;
-          } else if (item.type === 'beamCount') {
-            if (this.beamCount < 10) this.beamCount++;
+          switch (item.type) {
+            case 'beamSpeed':
+              if (this.beamInterval > 20) this.beamInterval -= 10;
+              else if (this.beamInterval > 10) this.beamInterval -= 2;
+              else if (this.beamInterval > 1) this.beamInterval -= 1;
+              break;
+            case 'beamCount':
+              if (this.beamCount < 10) this.beamCount++;
+              break;
+            case 'skill':
+              this.skill = 1;
           }
         }
 
@@ -119,6 +135,16 @@ function MainEvent() {
           items.splice(index, 1);
         }
       });
+
+      // skill
+      if (
+        (this.input.keys.includes('Space') ||
+          (this.input.keys.includes('touchCenterX') &&
+            this.input.keys.includes('touchCenterY'))) &&
+        this.skill !== 0
+      )
+        // 한 번만 인식되게
+        this.uesSkill();
     }
 
     draw(context: CanvasRenderingContext2D) {
@@ -148,6 +174,27 @@ function MainEvent() {
     addItem(type: string) {
       this.items.push(new Item(this, type));
     }
+
+    uesSkill() {
+      this.blocks.splice(0);
+      this.skill--;
+    }
+
+    restart() {
+      this.player.restart();
+      this.blocks = [];
+      this.beams = [];
+      this.items = [];
+      this.timer = 0;
+      this.score = 0;
+      this.blockInterval = 140;
+      this.beamInterval = 50;
+      this.difficulty = 2;
+      this.beamCount = 1;
+      this.skill = 1;
+      this.gameOver = false;
+      animate();
+    }
   }
 
   const game = new Game(canvas.width, canvas.height);
@@ -169,6 +216,17 @@ function MainEvent() {
       Math.abs(one.y + one.height - (another.y + another.height)) <= one.height;
     return xCollision && yCollision;
   }
+
+  function fullScreen() {
+    if (!document.fullscreenElement) {
+      canvas.requestFullscreen().catch((err) => {
+        alert(`${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }
+  FSbtn.addEventListener('click', fullScreen);
 }
 
 window.addEventListener('load', MainEvent);

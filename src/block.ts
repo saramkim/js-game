@@ -15,8 +15,8 @@ class Block {
     this.width = 50;
     this.height = 50;
     this.x =
-      Math.random() * (game.width / difficulty - this.width) +
-      location * (game.width / difficulty);
+      Math.random() * (this.game.width / difficulty - this.width) +
+      location * (this.game.width / difficulty);
     this.y = 0;
     this.speed = 0;
     this.fallSpeed = 1 + timer / 10000;

@@ -7,7 +7,7 @@ class Item {
   speed: number;
   overScreen: boolean;
   type: string;
-  color: any;
+  color?: string;
 
   constructor(game: any, type: string) {
     this.width = 50;
@@ -32,7 +32,7 @@ class Item {
   }
 
   draw(context: CanvasRenderingContext2D) {
-    context.fillStyle = this.color;
+    context.fillStyle = this.color as string;
     context.fillRect(this.x, this.y, this.width, this.height);
     // ctx.drawImage(img1, this.x, this.y, this.width, this.height);
   }

@@ -34,11 +34,19 @@ class UI {
       this.fontColor = 'green';
       context.textAlign = 'center';
       context.fillText('Game Over', this.game.width / 2, this.game.height / 2);
-      context.fillText(
-        'press Enter to restart!',
-        this.game.width / 2,
-        this.game.height / 2 + 40
-      );
+      if (window.innerWidth >= 600) {
+        context.fillText(
+          'press Enter to restart!',
+          this.game.width / 2,
+          this.game.height / 2 + 40
+        );
+      } else {
+        context.fillText(
+          'press Long to restart!',
+          this.game.width / 2,
+          this.game.height / 2 + 40
+        );
+      }
     }
   }
 }

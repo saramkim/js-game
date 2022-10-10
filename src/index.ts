@@ -6,6 +6,8 @@ import Beam from './beam';
 import Item from './item';
 import UI from './UI';
 
+declare type Object = Block | Player | Beam | Item;
+
 function MainEvent() {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
   const ctx = canvas.getContext('2d')!;
@@ -51,7 +53,7 @@ function MainEvent() {
       this.gameOver = false;
     }
 
-    update(animation: number) {
+    update() {
       this.timer++;
 
       // player
@@ -74,7 +76,6 @@ function MainEvent() {
       this.blocks.forEach((block, index, blocks) => {
         if (Collision(this.player, block)) {
           if (this.player.HP === 1) {
-            cancelAnimationFrame(animation);
             this.gameOver = true;
           }
           this.player.HP--;
@@ -124,11 +125,15 @@ function MainEvent() {
               else if (this.beamInterval > 10) this.beamInterval -= 2;
               else if (this.beamInterval > 1) this.beamInterval -= 1;
               break;
+            case 'life':
+              this.player.HP++;
+              break;
             case 'beamCount':
               if (this.beamCount < 10) this.beamCount++;
               break;
             case 'skill':
               this.skill = 1;
+              break;
           }
         }
 
@@ -194,21 +199,39 @@ function MainEvent() {
       this.beamCount = 1;
       this.skill = 1;
       this.gameOver = false;
-      animate();
+      animate(makeCallback(60));
     }
   }
 
   const game = new Game(canvas.width, canvas.height);
 
-  function animate() {
-    const animation = requestAnimationFrame(animate);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    game.update(animation);
-    game.draw(ctx);
-  }
+  const animate = (callback: (timestamp: number) => void) => {
+    requestAnimationFrame(callback);
+  };
+
+  const makeCallback = (fps: number) => {
+    const fpsInterval = 1000 / fps;
+    let start: number;
+    let then: number;
+
+    return function callback(timestamp: number) {
+      if (start === undefined && then === undefined) {
+        start = window.performance.now();
+        then = window.performance.now();
+      }
+      const elapsed = timestamp - then;
+      if (elapsed >= fpsInterval) {
+        then = timestamp - (elapsed % fpsInterval);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        game.update();
+        game.draw(ctx);
+      }
+      if (!game.gameOver) requestAnimationFrame(callback);
+    };
+  };
 
   function gameStart() {
-    animate();
+    animate(makeCallback(60));
     introduction.style.display = 'none';
     startBtn.style.display = 'none';
     if (!document.fullscreenElement) {
@@ -221,7 +244,7 @@ function MainEvent() {
   }
   startBtn.addEventListener('click', gameStart);
 
-  function Collision(one: any, another: any) {
+  function Collision(one: Object, another: Object) {
     const xCollision =
       Math.abs(one.x - another.x) < one.width &&
       Math.abs(one.x + one.width - (another.x + another.width)) < one.width;
